@@ -43,6 +43,10 @@ can swing dozens of boxes in a single turn.
 
 ## Controls
 
+The dot page fills whatever the screen leaves for it: the board is laid out to
+the viewport, and re-fits automatically when the window or device orientation
+changes (a deliberate pinch or wheel zoom is left alone).
+
 | Action | Mouse | Touch |
 |---|---|---|
 | Play a line | click the gap between two dots | tap the gap |
@@ -160,8 +164,12 @@ the level allows (260 ms Competitive, 950 ms Grandmaster), whatever the board.
 
 Plain HTML/CSS/vanilla JS. No build step, no dependencies to install.
 
+The footer shows the running build version (`v1.0.1` at the time of writing) —
+quote it in a bug report. GitHub Pages caches assets for up to ten minutes, so
+after an update a hard refresh (Ctrl/Cmd+Shift+R) may be needed once.
+
 ```
-node tests/engine.test.js            # 28 checks: rules, chains, serialisation, AI legality
+node tests/engine.test.js            # 29 checks: rules, chains, rendering geometry, AI legality
 node tools/sim.js 20 8 competitive casual 60 swap
 node tools/probe.js 8
 ./run_tests.sh
