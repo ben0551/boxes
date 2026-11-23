@@ -88,7 +88,11 @@ guessed.
 |---|---|
 | Casual vs School Kid | 100% (8 games) |
 | Competitive vs Casual | 96.7% (30 games, average margin 16.1 boxes) |
-| Grandmaster vs Competitive | see below |
+| Grandmaster vs Competitive | 75.0% (16 games, average margin 10.5 boxes) |
+
+So the ladder is monotonic and each rung is a real step: the Grandmaster beats
+the Competitive player three times out of four, and the Competitive player
+almost never drops a game to Casual.
 
 Run it yourself:
 
