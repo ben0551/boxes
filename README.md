@@ -187,6 +187,13 @@ node tools/probe.js 8
 * **The endgame is solved exactly**, not heuristically, because that is where
   100-box games are decided.
 
+## Not in this build
+
+The v2.0 spec lists rankings, replays and match analysis. Online multiplayer is
+here because it was asked for; the other three are not — there is no server to
+keep a leaderboard, and a replay would mean storing full move history per game
+(the engine keeps it, but nothing persists or renders it yet).
+
 ## Licence
 
 MIT — do whatever you like with it.
