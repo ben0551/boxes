@@ -334,6 +334,24 @@ test('deserialize rejects a corrupt save', () => {
 
 /* ------------------------------------------------------------- nearestEdge */
 
+test('edge endpoints span exactly one cell in the right direction', () => {
+  const s = B.createGame({ dots: 4 });
+  // horizontal edge between (0,0) and (0,1)
+  assert.deepStrictEqual(B.edgeEndpoints(s, 0), { ax: 0, ay: 0, bx: 1, by: 0 });
+  // vertical edge between (1,2) and (2,2): v index 1*4+2 -> global hCount + 6
+  const vId = B.hCount(s) + 1 * 4 + 2;
+  assert.deepStrictEqual(B.edgeEndpoints(s, vId), { ax: 2, ay: 1, bx: 2, by: 2 });
+  // every edge must be a real unit segment, not a zero-length midpoint
+  const total = B.edgeTotal(s);
+  for (let id = 0; id < total; id++) {
+    const e = B.edgeEndpoints(s, id);
+    assert.ok(e, 'edge ' + id + ' has endpoints');
+    const len = Math.abs(e.bx - e.ax) + Math.abs(e.by - e.ay);
+    assert.strictEqual(len, 1, 'edge ' + id + ' spans exactly one cell');
+    assert.notDeepStrictEqual({ ax: e.ax, ay: e.ay }, { ax: e.bx, by: e.by });
+  }
+});
+
 test('nearestEdge snaps to the closest gap within tolerance', () => {
   const s = B.createGame({ dots: 4 });
   // midpoint of the first horizontal edge is (0.5, 0)
@@ -451,16 +469,16 @@ test('the grandmaster endgame solver agrees with a brute-force search', () => {
 
 test('the measured ladder is monotonic on a fixed series', () => {
   // Deterministic regression check. casual > kid and competitive > casual.
-  function winRate(strong, weak, games) {
+  function winRate(strong, weak, games, dots) {
     let wins = 0;
     for (let g = 0; g < games; g++) {
-      const s = B.createGame({ dots: 5, rng: mulberry32(g * 104729 + 17) });
+      const s = B.createGame({ dots: dots, rng: mulberry32(g * 104729 + 17) });
       let guard = 0;
       while (s.phase === 'play' && guard++ < 5000) {
         const flip = g % 2 === 1;
         const level = (s.current === 0) !== flip ? strong : weak;
         const opts = (level === 'competitive')
-          ? { timeMs: 60, nodeCap: 60000, maxDepth: 8, exactEdges: 0 }
+          ? { timeMs: 120, nodeCap: 120000, maxDepth: 8, exactEdges: 0 }
           : {};
         const id = AI.choose(s, level, opts);
         B.play(s, id);
@@ -470,10 +488,12 @@ test('the measured ladder is monotonic on a fixed series', () => {
     }
     return wins / games;
   }
-  const casualOverKid = winRate('casual', 'kid', 10);
-  const compOverCasual = winRate('competitive', 'casual', 10);
+  const casualOverKid = winRate('casual', 'kid', 10, 6);
+  // 6x6 dots is the smallest board where the gap is unambiguous; on 5x5 the
+  // game is so short that a 10-game sample is mostly noise.
+  const compOverCasual = winRate('competitive', 'casual', 8, 6);
   assert.ok(casualOverKid >= 0.9, `casual beat kid only ${casualOverKid}`);
-  assert.ok(compOverCasual >= 0.6, `competitive beat casual only ${compOverCasual}`);
+  assert.ok(compOverCasual >= 0.75, `competitive beat casual only ${compOverCasual}`);
 });
 
 /* ------------------------------------------------------------------ report */

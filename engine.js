@@ -558,6 +558,18 @@
     return boxesTotal(state) - state.scores[0] - state.scores[1];
   }
 
+  // Endpoints of an edge in board units: a horizontal edge runs (c,r)-(c+1,r),
+  // a vertical one (c,r)-(c,r+1). Single source of truth for drawing, the hover
+  // ghost and hit testing.
+  function edgeEndpoints(state, id) {
+    const info = edgeInfo(state, id);
+    if (!info) return null;
+    if (info.type === 'h') {
+      return { ax: info.c, ay: info.r, bx: info.c + 1, by: info.r };
+    }
+    return { ax: info.c, ay: info.r, bx: info.c, by: info.r + 1 };
+  }
+
   function edgeMidpoint(state, id) {
     const info = edgeInfo(state, id);
     if (info.type === 'h') {
@@ -614,6 +626,7 @@
     deserialize: deserialize,
     remainingBoxes: remainingBoxes,
     edgeMidpoint: edgeMidpoint,
+    edgeEndpoints: edgeEndpoints,
     nearestEdge: nearestEdge,
   };
 }));

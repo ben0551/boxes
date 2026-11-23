@@ -572,42 +572,35 @@
       if (!arr[info.idx]) continue;
       const own = info.type === 'h' ? this.owners.h[info.idx] : this.owners.v[info.idx];
       const col = own === 2 ? C.p2Line : (own === 1 ? C.p1Line : C.inkSoft);
-      const ax = info.c;
-      const ay = info.type === 'h' ? info.r : info.r + 0.5;
-      const ex0 = info.type === 'h' ? info.c + 1 : info.c;
-      const ey0 = info.type === 'h' ? info.r : info.r + 0.5;
-      let ex = ex0;
-      let ey = ey0;
+      const ends = B.edgeEndpoints(st, id);
+      let ex = ends.bx;
+      let ey = ends.by;
       for (let k = 0; k < this.anims.length; k++) {
         const a = this.anims[k];
         if (a.kind === 'edge' && a.id === id) {
           const t = easeOut(Math.min(1, (now - a.t0) / a.dur));
-          ex = ax + (ex0 - ax) * t;
-          ey = ay + (ey0 - ay) * t;
+          ex = ends.ax + (ends.bx - ends.ax) * t;
+          ey = ends.ay + (ends.by - ends.ay) * t;
         }
       }
       ctx.strokeStyle = col;
       ctx.beginPath();
-      ctx.moveTo(bx + ax * s, by + ay * s);
+      ctx.moveTo(bx + ends.ax * s, by + ends.ay * s);
       ctx.lineTo(bx + ex * s, by + ey * s);
       ctx.stroke();
     }
 
     // Hover ghost.
     if (this.hover !== null && this.assist.preview && B.isFree(st, this.hover)) {
-      const info = B.edgeInfo(st, this.hover);
-      const ax = info.c;
-      const ay = info.type === 'h' ? info.r : info.r + 0.5;
-      const ex = info.type === 'h' ? info.c + 1 : info.c;
-      const ey = info.type === 'h' ? info.r : info.r + 0.5;
+      const ends = B.edgeEndpoints(st, this.hover);
       ctx.save();
       ctx.globalAlpha = 0.4;
       ctx.strokeStyle = st.current === 0 ? C.p1Line : C.p2Line;
       ctx.lineWidth = lw;
       ctx.setLineDash([Math.max(3, s * 0.12), Math.max(3, s * 0.1)]);
       ctx.beginPath();
-      ctx.moveTo(bx + ax * s, by + ay * s);
-      ctx.lineTo(bx + ex * s, by + ey * s);
+      ctx.moveTo(bx + ends.ax * s, by + ends.ay * s);
+      ctx.lineTo(bx + ends.bx * s, by + ends.by * s);
       ctx.stroke();
       ctx.restore();
     }
