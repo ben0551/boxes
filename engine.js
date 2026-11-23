@@ -238,28 +238,43 @@
 
   // Every free edge is exactly one of: captures a box, is safe (creates no
   // three-sided box), or is damaging (hands the opponent a box).
-  function classify(state) {
-    const capturing = [];
-    const safe = [];
-    const damaging = [];
-    const total = edgeTotal(state);
-    for (let id = 0; id < total; id++) {
-      const info = edgeInfo(state, id);
-      const arr = info.type === 'h' ? state.h : state.v;
-      if (arr[info.idx]) continue;
-      let hasThree = false;
-      let hasTwo = false;
-      const adj = adjacentBoxes(state, info);
-      for (let i = 0; i < adj.length; i++) {
-        const s = state.boxSides[adj[i]];
-        if (s === 3) hasThree = true;
-        else if (s === 2) hasTwo = true;
+  // Allocation-light classification: fills the three arrays on `out` and returns
+  // it. Used by the AI, which calls it at every search node.
+  function classifyInto(state, out) {
+    out.capturing.length = 0;
+    out.safe.length = 0;
+    out.damaging.length = 0;
+    const rows = state.rows, cols = state.cols, C = cols - 1;
+    const h = state.h, v = state.v, bs = state.boxSides;
+    let id = 0;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < C; c++, id++) {
+        if (h[id]) continue;
+        let three = false, two = false;
+        if (r > 0) { const s = bs[(r - 1) * C + c]; if (s === 3) three = true; else if (s === 2) two = true; }
+        if (!three && r < rows - 1) { const s = bs[r * C + c]; if (s === 3) three = true; else if (s === 2) two = true; }
+        if (three) out.capturing.push(id);
+        else if (two) out.damaging.push(id);
+        else out.safe.push(id);
       }
-      if (hasThree) capturing.push(id);
-      else if (hasTwo) damaging.push(id);
-      else safe.push(id);
     }
-    return { capturing: capturing, safe: safe, damaging: damaging };
+    for (let r = 0; r < rows - 1; r++) {
+      for (let c = 0; c < cols; c++, id++) {
+        const local = r * cols + c;
+        if (v[local]) continue;
+        let three = false, two = false;
+        if (c > 0) { const s = bs[r * C + c - 1]; if (s === 3) three = true; else if (s === 2) two = true; }
+        if (!three && c < C) { const s = bs[r * C + c]; if (s === 3) three = true; else if (s === 2) two = true; }
+        if (three) out.capturing.push(id);
+        else if (two) out.damaging.push(id);
+        else out.safe.push(id);
+      }
+    }
+    return out;
+  }
+
+  function classify(state) {
+    return classifyInto(state, { capturing: [], safe: [], damaging: [] });
   }
 
   /* ---------------------------------------------------------------- analyse */
@@ -589,6 +604,7 @@
     freeEdges: freeEdges,
     play: play,
     classify: classify,
+    classifyInto: classifyInto,
     analyze: analyze,
     looseBoxes: looseBoxes,
     captureClosure: captureClosure,

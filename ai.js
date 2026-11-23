@@ -110,7 +110,10 @@
 
     const memo = new Map();
     let states = 0;
-    const CAP_STATES = 60000;
+    // Beyond a handful of chains the exact recursion costs more than it is
+    // worth; the all-double-cross line is a good enough estimate out there.
+    const CAP_STATES = 4000;
+    const EXACT_CHAINS = 12;
 
     function V(key) {
       if (key === '') return 0;
@@ -139,24 +142,34 @@
     }
 
     lens.sort(function (x, y) { return y - x; });
+    if (lens.length > EXACT_CHAINS) {
+      let sum = 0;
+      for (let i = 0; i < lens.length; i++) sum += lens[i];
+      return 4 * lens.length - sum;
+    }
     return V(lens.join(','));
   }
 
   /* ---------------------------------------------------------------- evaluate */
 
-  function evaluate(state) {
+  function evaluate(state, cls) {
     const me = state.current;
     let v = state.scores[me] - state.scores[1 - me];
-    const cls = B.classify(state);
     if (cls.capturing.length) {
       v += pendingCaptures(state);
       return v;
     }
+    const free = cls.safe.length + cls.damaging.length;
     if (!cls.safe.length) return v + chainValue(state);
     // Safe moves remain. Whoever plays the last one forces the other to open
     // the first chain, so the chain-rule value is credited to the player who
     // will NOT have to open: with S safe moves left the mover takes the last
     // one when S is odd, and then the opponent opens.
+    //
+    // Deep in the midgame the chain structure is still forming and the exact
+    // recursion costs more than it is worth, so only the endgame pays for it.
+    // The parity of the safe lines still says who will have to open.
+    if (free > 60) return v + (cls.safe.length % 2 === 0 ? -0.5 : 0.5);
     const sign = (cls.safe.length % 2 === 0) ? 1 : -1;
     return v + sign * chainValue(state);
   }
@@ -193,31 +206,30 @@
     return a * 65536 + b;
   }
 
-  function orderedMoves(state, ttMove) {
-    const cls = B.classify(state);
-    const out = [];
-    const seen = new Set();
-    function push(id) {
-      if (seen.has(id)) return;
-      seen.add(id);
-      out.push(id);
+  function orderedMoves(state, ttMove, cls, out) {
+    out.length = 0;
+    const caps = cls.capturing;
+    if (caps.length > 1) {
+      const sorted = caps.slice();
+      sorted.sort(function (x, y) {
+        const ix = B.edgeInfo(state, x);
+        const iy = B.edgeInfo(state, y);
+        const ax = B.adjacentBoxes(state, ix);
+        const ay = B.adjacentBoxes(state, iy);
+        let nx = 0; let ny = 0;
+        for (let i = 0; i < ax.length; i++) if (state.boxSides[ax[i]] === 3) nx++;
+        for (let i = 0; i < ay.length; i++) if (state.boxSides[ay[i]] === 3) ny++;
+        return ny - nx;
+      });
+      for (let i = 0; i < sorted.length; i++) out.push(sorted[i]);
+    } else {
+      for (let i = 0; i < caps.length; i++) out.push(caps[i]);
     }
-    // Captures first, biggest first.
-    const caps = cls.capturing.slice();
-    caps.sort(function (x, y) {
-      const ix = B.edgeInfo(state, x);
-      const iy = B.edgeInfo(state, y);
-      const ax = B.adjacentBoxes(state, ix);
-      const ay = B.adjacentBoxes(state, iy);
-      let nx = 0; let ny = 0;
-      for (let i = 0; i < ax.length; i++) if (state.boxSides[ax[i]] === 3) nx++;
-      for (let i = 0; i < ay.length; i++) if (state.boxSides[ay[i]] === 3) ny++;
-      return ny - nx;
-    });
-    for (let i = 0; i < caps.length; i++) push(caps[i]);
-    if (ttMove >= 0 && B.isFree(state, ttMove)) push(ttMove);
-    for (let i = 0; i < cls.safe.length; i++) push(cls.safe[i]);
-    for (let i = 0; i < cls.damaging.length; i++) push(cls.damaging[i]);
+    if (ttMove >= 0 && B.isFree(state, ttMove) && out.indexOf(ttMove) === -1) out.push(ttMove);
+    const safe = cls.safe;
+    for (let i = 0; i < safe.length; i++) out.push(safe[i]);
+    const dmg = cls.damaging;
+    for (let i = 0; i < dmg.length; i++) out.push(dmg[i]);
     return out;
   }
 
@@ -228,6 +240,7 @@
       nodes: 0,
       nodeCap: budget.nodeCap || 300000,
       endAt: budget.timeMs ? Date.now() + budget.timeMs : 0,
+      cls: { capturing: [], safe: [], damaging: [] },
     };
   }
 
@@ -240,7 +253,9 @@
     if ((ctx.nodes & 255) === 0 && ctx.endAt && Date.now() > ctx.endAt) throw CAP;
     if (ctx.nodes > ctx.nodeCap) throw CAP;
     if (state.phase === 'over') return terminalScore(state);
-    if (depth <= 0) return evaluate(state);
+
+    const cls = B.classifyInto(state, ctx.cls);
+    if (depth <= 0) return evaluate(state, cls);
 
     const key = hashState(state, ctx.z);
     const ent = ctx.tt.get(key);
@@ -255,7 +270,7 @@
       }
     }
 
-    const moves = orderedMoves(state, ttMove);
+    const moves = orderedMoves(state, ttMove, cls, []);
     if (!moves.length) return terminalScore(state);
 
     const alpha0 = alpha;
@@ -285,7 +300,7 @@
     if (!free.length) return null;
     if (free.length === 1) return free[0];
 
-    let rootMoves = orderedMoves(state, -1);
+    let rootMoves = orderedMoves(state, -1, B.classifyInto(state, ctx.cls), []);
     let bestId = rootMoves[0];
     let bestVal = -Infinity;
     const maxDepth = Math.min(budget.maxDepth || 12, Math.max(free.length, 1));
