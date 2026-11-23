@@ -87,12 +87,13 @@ guessed.
 | Matchup (seats alternated) | Stronger level wins |
 |---|---|
 | Casual vs School Kid | 100% (8 games) |
-| Competitive vs Casual | 96.7% (30 games, average margin 16.1 boxes) |
+| Competitive vs Casual | 90% and 96.7% in two independent 30-game runs (average margins 14.9 and 16.1 boxes) |
 | Grandmaster vs Competitive | 75.0% (16 games, average margin 10.5 boxes) |
 
 So the ladder is monotonic and each rung is a real step: the Grandmaster beats
 the Competitive player three times out of four, and the Competitive player
-almost never drops a game to Casual.
+almost never drops a game to Casual. Sample sizes are modest, so treat the
+middle row as a range rather than a point.
 
 Run it yourself:
 
