@@ -189,7 +189,6 @@
     if (s.largestTurn >= 5) unlock('chain-5');
     if (s.largestTurn >= 10) unlock('chain-10');
     if (s.moves >= 380) unlock('marathon');
-    if (App.stats.totalBoxes + s.scores[0] + s.scores[1] >= 100) unlock('century');
 
     if (s.phase === 'over' && s.winner !== null && s.winner !== -1) {
       const w = s.winner;
@@ -1049,6 +1048,7 @@
       recordResult();
       saveStats();
       checkAchievements();
+      if (App.stats.totalBoxes >= 100) unlock('century');
       renderAll();
       showGameOver();
       return;
