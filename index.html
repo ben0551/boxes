@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-theme="graph">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a68">
+<title>Boxes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231f3a68'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='4'%3E%3Crect x='14' y='14' width='16' height='16'/%3E%3Crect x='34' y='14' width='16' height='16'/%3E%3Crect x='14' y='34' width='16' height='16'/%3E%3C/g%3E%3Crect x='34' y='34' width='16' height='16' fill='%23ffd166' stroke='none'/%3E%3C/svg%3E">
+<meta name="description" content="Boxes — the school-paper dots and boxes game. Fill the page with boxes, chain your captures, and outscore your opponent.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1>Boxes</h1>
+        <p class="tagline">Fill the page. Chain the endgame.</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-howto" type="button" class="btn ghost small">How to play</button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ---------------------------------------------------------- home -->
+    <section id="screen-home" class="screen">
+      <div class="hero">
+        <div class="hero-grid" aria-hidden="true">
+          <span class="hg hg-a"></span><span class="hg hg-b"></span><span class="hg hg-c"></span>
+          <span class="hg hg-d"></span><span class="hg hg-e"></span><span class="hg hg-f"></span>
+          <span class="hg hg-g"></span><span class="hg hg-h"></span><span class="hg hg-i"></span>
+        </div>
+        <p class="hero-copy">
+          Two players, one page of dots. Draw the fourth side of a square and it is
+          yours &mdash; and you go again. When the page is full, the most boxes wins.
+        </p>
+        <div class="menu">
+          <button class="btn big" type="button" data-goto="setup">New Game</button>
+          <button class="btn big" type="button" id="btn-continue" data-goto="continue">Continue</button>
+          <button class="btn big" type="button" data-goto="online">Online Multiplayer</button>
+          <button class="btn big ghost" type="button" data-goto="stats">Statistics</button>
+          <button class="btn big ghost" type="button" data-goto="achievements">Achievements</button>
+          <button class="btn big ghost" type="button" data-goto="settings">Settings</button>
+        </div>
+        <p class="hero-hint">Default board: 11&times;11 dots &mdash; 100 boxes &mdash; 10 to 15 minutes.</p>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- setup -->
+    <section id="screen-setup" class="screen" hidden>
+      <h2 id="setup-title">New game</h2>
+      <form id="setup-form" autocomplete="off">
+        <div class="field">
+          <span class="field-label">Mode</span>
+          <div class="pill-group" id="mode-group">
+            <label class="pill"><input type="radio" name="gamemode" value="ai" checked><span>Vs AI</span></label>
+            <label class="pill"><input type="radio" name="gamemode" value="local"><span>Pass &amp; Play</span></label>
+          </div>
+          <p class="field-help" id="mode-help">One device, two players, alternating turns.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Players</span>
+          <div class="name-row">
+            <input id="name-1" type="text" maxlength="20" placeholder="Player 1" aria-label="Player 1 name">
+            <input id="name-2" type="text" maxlength="20" placeholder="Player 2" aria-label="Player 2 name">
+          </div>
+        </div>
+
+        <div class="field" id="field-difficulty">
+          <span class="field-label">AI difficulty</span>
+          <div class="pill-group" id="difficulty-group">
+            <label class="pill"><input type="radio" name="difficulty" value="kid"><span>School Kid</span></label>
+            <label class="pill"><input type="radio" name="difficulty" value="casual"><span>Casual Player</span></label>
+            <label class="pill"><input type="radio" name="difficulty" value="competitive" checked><span>Competitive</span></label>
+            <label class="pill"><input type="radio" name="difficulty" value="grandmaster"><span>Grandmaster</span></label>
+          </div>
+          <p class="field-help" id="difficulty-help">Understands chains and looks ahead.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Board size</span>
+          <div class="pill-group" id="size-group">
+            <label class="pill"><input type="radio" name="size" value="quick"><span>Quick 8&times;8</span></label>
+            <label class="pill"><input type="radio" name="size" value="classic" checked><span>Classic 11&times;11</span></label>
+            <label class="pill"><input type="radio" name="size" value="a4"><span>A4 15&times;15</span></label>
+            <label class="pill"><input type="radio" name="size" value="giant"><span>Giant 21&times;21</span></label>
+            <label class="pill"><input type="radio" name="size" value="custom"><span>Custom</span></label>
+          </div>
+          <p class="field-help" id="size-help">11&times;11 dots = 100 boxes. About 10 to 15 minutes.</p>
+        </div>
+
+        <div class="field" id="field-custom" hidden>
+          <span class="field-label">Dots per side</span>
+          <div class="stepper">
+            <button type="button" id="custom-minus" class="btn ghost small">&minus;</button>
+            <output id="custom-value">11</output>
+            <button type="button" id="custom-plus" class="btn ghost small">+</button>
+          </div>
+          <p class="field-help" id="custom-help">4 to 50 dots. <span id="custom-boxes">100</span> boxes.</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-goto="home">Back</button>
+          <button type="submit" class="btn primary">Start game</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ------------------------------------------------------- online -->
+    <section id="screen-online" class="screen" hidden>
+      <h2>Online multiplayer</h2>
+      <p class="screen-intro">One player hosts a game and shares the code. The other player opens the link or types the code.</p>
+
+      <div class="online-panels">
+        <div class="panel">
+          <h3>Host a game</h3>
+          <label class="stacked">Your name
+            <input id="host-name" type="text" maxlength="20" placeholder="Host">
+          </label>
+          <label class="stacked">Board size
+            <select id="host-size">
+              <option value="quick">Quick 8&times;8 (49 boxes)</option>
+              <option value="classic" selected>Classic 11&times;11 (100 boxes)</option>
+              <option value="a4">A4 15&times;15 (196 boxes)</option>
+              <option value="giant">Giant 21&times;21 (400 boxes)</option>
+            </select>
+          </label>
+          <button id="btn-create" type="button" class="btn primary">Create game</button>
+        </div>
+
+        <div class="panel">
+          <h3>Join a game</h3>
+          <label class="stacked">Your name
+            <input id="join-name" type="text" maxlength="20" placeholder="Guest">
+          </label>
+          <label class="stacked">Game code
+            <input id="join-code" type="text" maxlength="12" placeholder="e.g. K7Q2">
+          </label>
+          <button id="btn-join" type="button" class="btn primary">Join game</button>
+        </div>
+      </div>
+
+      <div id="lobby" class="lobby" hidden>
+        <div class="panel">
+          <h3>Lobby</h3>
+          <p class="lobby-status" id="lobby-status">Waiting for your opponent&hellip;</p>
+          <div class="code-box">
+            <span class="code-label">Game code</span>
+            <span class="code-value" id="lobby-code">&mdash;</span>
+          </div>
+          <div class="code-box">
+            <span class="code-label">Invite link</span>
+            <input class="link-value" id="lobby-link" type="text" readonly value="">
+          </div>
+          <div class="form-actions">
+            <button id="btn-copy-link" type="button" class="btn small">Copy invite link</button>
+            <button id="btn-cancel-lobby" type="button" class="btn ghost small">Cancel game</button>
+          </div>
+          <p id="lobby-error" class="error-text" hidden></p>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn ghost" data-goto="home">Back</button>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- game -->
+    <section id="screen-game" class="screen" hidden>
+      <div class="scorebar">
+        <div class="score-side p0" id="score-0">
+          <span class="score-name" id="name-0">Player 1</span>
+          <span class="score-value" id="score-val-0">0</span>
+        </div>
+        <div class="score-mid">
+          <span id="turn-banner" class="turn-banner p0">Player 1&rsquo;s turn</span>
+          <span class="score-sub"><span id="remaining">100</span> boxes left</span>
+        </div>
+        <div class="score-side p1" id="score-1">
+          <span class="score-name" id="name-1">Player 2</span>
+          <span class="score-value" id="score-val-1">0</span>
+        </div>
+      </div>
+
+      <div class="board-wrap" id="board-wrap">
+        <canvas id="board" aria-label="Boxes board"></canvas>
+        <div class="board-tools">
+          <button type="button" class="btn ghost small" id="btn-zoom-out" title="Zoom out">&minus;</button>
+          <button type="button" class="btn ghost small" id="btn-zoom-in" title="Zoom in">+</button>
+          <button type="button" class="btn ghost small" id="btn-fit">Fit board</button>
+          <button type="button" class="btn ghost small" id="btn-centre">Centre</button>
+        </div>
+        <div class="board-hint" id="board-hint">Drag to pan &middot; scroll or pinch to zoom &middot; tap a gap between two dots</div>
+      </div>
+
+      <div class="game-actions">
+        <button id="btn-rematch" type="button" class="btn primary small" hidden>Rematch</button>
+        <button id="btn-quit" type="button" class="btn ghost small">Quit to menu</button>
+      </div>
+
+      <details class="log-panel" id="log-details">
+        <summary>Game log</summary>
+        <div id="log" class="log" aria-live="polite"></div>
+      </details>
+    </section>
+
+    <!-- ------------------------------------------------------- stats -->
+    <section id="screen-stats" class="screen" hidden>
+      <h2>Statistics</h2>
+      <div id="stats-body"></div>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" data-goto="home">Back</button>
+        <button type="button" class="btn danger small" id="btn-reset-stats">Reset statistics</button>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------- achievements -->
+    <section id="screen-achievements" class="screen" hidden>
+      <h2>Achievements</h2>
+      <div id="ach-body" class="ach-grid"></div>
+      <div class="form-actions">
+        <button type="button" class="btn ghost" data-goto="home">Back</button>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------- settings -->
+    <section id="screen-settings" class="screen" hidden>
+      <h2>Settings</h2>
+      <form id="settings-form" autocomplete="off">
+        <div class="field">
+          <span class="field-label">Theme</span>
+          <div class="pill-group" id="theme-group">
+            <label class="pill"><input type="radio" name="theme" value="graph" checked><span>Graph paper</span></label>
+            <label class="pill"><input type="radio" name="theme" value="whiteboard"><span>Whiteboard</span></label>
+            <label class="pill"><input type="radio" name="theme" value="chalkboard"><span>Chalkboard</span></label>
+            <label class="pill"><input type="radio" name="theme" value="retro"><span>Retro computer</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Box mark</span>
+          <div class="pill-group" id="mark-group">
+            <label class="pill"><input type="radio" name="mark" value="initial" checked><span>Initials</span></label>
+            <label class="pill"><input type="radio" name="mark" value="star"><span>Star</span></label>
+            <label class="pill"><input type="radio" name="mark" value="none"><span>Blank</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Strategic assistance</span>
+          <label class="check"><input type="checkbox" id="assist-safe"><span>Safe move highlight</span></label>
+          <label class="check"><input type="checkbox" id="assist-heat"><span>Heat map</span></label>
+          <label class="check"><input type="checkbox" id="assist-preview"><span>Move preview (ghost line)</span></label>
+          <p class="field-help">All assistance is off by default.</p>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn ghost" data-goto="home">Back</button>
+          <button type="submit" class="btn primary">Save settings</button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span>Boxes &middot; the school-paper dots and boxes game</span>
+    <span id="conn-status" class="conn-status"></span>
+  </footer>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="dialog" id="overlay-card" role="dialog" aria-modal="true"></div>
+</div>
+
+<script src="vendor/peerjs.min.js"></script>
+<script src="engine.js"></script>
+<script src="ai.js"></script>
+<script src="online.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
