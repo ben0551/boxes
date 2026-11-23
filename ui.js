@@ -10,6 +10,9 @@
   const STATS_KEY = 'boxes.stats.v1';
   const PREFS_KEY = 'boxes.prefs.v1';
 
+  // Shown in the footer so a bug report can name the build that was running.
+  const VERSION = '1.0.1';
+
   const SIZE_INFO = {
     quick: { dots: 8, label: 'Quick', boxes: 49, blurb: '8×8 dots = 49 boxes. About 5 to 10 minutes.' },
     classic: { dots: 11, label: 'Classic Schoolbook', boxes: 100, blurb: '11×11 dots = 100 boxes. About 10 to 15 minutes.' },
@@ -561,8 +564,9 @@
       }
     }
 
-    // Drawn edges.
-    const lw = Math.max(1.6, Math.min(9, s * 0.11));
+    // Drawn edges. The width is clamped in screen pixels so a board that fits a
+    // small area still shows a line you can actually see.
+    const lw = Math.max(2, Math.min(10, s * 0.1));
     ctx.lineWidth = lw;
     ctx.lineCap = 'round';
     const totalEdges = st.h.length + st.v.length;
@@ -1254,6 +1258,12 @@
     el.classList.toggle('online', !!online);
   }
 
+  // Keep the footer's version stamp in step with VERSION (single source of truth).
+  function renderVersion() {
+    const el = $('version');
+    if (el) el.textContent = VERSION;
+  }
+
   function showLobby() {
     $('lobby').hidden = false;
     $('lobby-error').hidden = true;
@@ -1397,6 +1407,7 @@
     App.view.refreshTheme();
 
     loadPrefs();
+    renderVersion();
     loadStats();
     refreshContinue();
 
@@ -1576,6 +1587,7 @@
   }
 
   window.__APP = App;
+  App.version = VERSION;
   // Test hook: play a line by edge id without synthesising pointer input.
   App.debugPlay = onBoardTap;
 }());

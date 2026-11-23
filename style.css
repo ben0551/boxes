@@ -105,7 +105,7 @@ html[data-theme="retro"] {
 html, body {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  height: 100%;
   background: var(--paper-edge);
   color: var(--ink);
   font-family: var(--font);
@@ -120,8 +120,18 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: var(--gap);
+  /* Fill the viewport so the dot page scales with the screen, not with a
+     fixed pixel height. */
   min-height: 100vh;
+  min-height: 100dvh;
 }
+
+#main { flex: 1 1 auto; display: flex; flex-direction: column; }
+
+.screen { flex: 0 0 auto; }
+
+/* The match screen gives the board every pixel that is left over. */
+#screen-game { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
 
 .topbar {
   display: flex;
@@ -305,8 +315,9 @@ input[type="text"]:focus, select:focus { outline: 2px solid var(--p1); outline-o
 .board-wrap {
   position: relative;
   width: 100%;
-  height: min(62vh, 620px);
-  min-height: 340px;
+  /* Flex-fill whatever the viewport leaves for it. */
+  flex: 1 1 auto;
+  min-height: 240px;
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--line);
@@ -441,7 +452,7 @@ input[type="text"]:focus, select:focus { outline: 2px solid var(--p1); outline-o
 
 @media (max-width: 720px) {
   .online-panels { grid-template-columns: 1fr; }
-  .board-wrap { height: 56vh; min-height: 300px; }
+  .board-wrap { min-height: 220px; }
   .scorebar { grid-template-columns: 1fr auto; padding: 8px 10px; }
   .score-mid { grid-column: 1 / -1; order: -1; }
   .score-name { font-size: 0.8rem; }
