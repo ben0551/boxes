@@ -275,7 +275,7 @@
     this._bind();
   }
 
-  BoardView.prototype.setState = function (state) {
+  BoardView.prototype.setState = function (state, opts) {
     const key = state ? (state.dots + ':' + state.history.length + ':' + state.moves) : '';
     if (this.state && state && this.state.dots === state.dots && this._key === key) {
       this.state = state;
@@ -290,8 +290,10 @@
     // A new board clears leftover animation; an ordinary move keeps its box
     // fills so they are not cut short by the re-render.
     if (boardChanged) this.anims = [];
-    // A newly reported line (an opponent's move online) draws itself in.
-    if (state && state.lastEdge !== null && state.lastEdge !== undefined && state.lastEdge !== this._lastEdge) {
+    // A line reported from outside our own move (an opponent online) draws
+    // itself in. Local moves already queued their own animation.
+    const remote = !!(opts && opts.remote);
+    if (remote && state && state.lastEdge !== null && state.lastEdge !== undefined && state.lastEdge !== this._lastEdge) {
       this._lastEdge = state.lastEdge;
       this.anims.push({ kind: 'edge', id: state.lastEdge, dur: 110, t0: performance.now() });
     }
@@ -1328,11 +1330,12 @@
     App.game = state;
     hideOverlay();
     if (!$('screen-game').hidden) {
+      App.view.setState(state, { remote: true });
       renderAll();
     } else {
       hideLobby();
       showScreen('game');
-      App.view.setState(state);
+      App.view.setState(state, { remote: true });
       App.view.fit();
       renderAll();
     }
