@@ -97,8 +97,8 @@ node tools/sim.js 20 8 competitive grandmaster auto swap
 node tools/probe.js 8      # exact-solve cost by number of free edges
 ```
 
-The Grandmaster's exact solver costs roughly: 8 free lines ≈ 30 ms, 12 ≈ 150 ms,
-16 ≈ 900 ms, 24 ≈ 7 s — which is why the exact threshold is 16.
+The Grandmaster's exact solver costs roughly: 8 free lines ≈ 15 ms, 12 ≈ 140 ms,
+16 ≈ 700 ms, 20 ≈ 900 ms, 24 ≈ 4.5 s — which is why the exact threshold is 16.
 
 ## Online multiplayer
 
