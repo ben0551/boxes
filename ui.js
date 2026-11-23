@@ -342,9 +342,12 @@
     this.dpr = dpr;
     this.cssW = w;
     this.cssH = h;
-    // A new board size re-fits; an ordinary window resize keeps the player's
-    // pan and zoom.
-    if (this.state && this._fittedDots !== this.state.dots) this.fit();
+    // Re-fit when the board itself is new or when the available space has
+    // changed enough to matter. A deliberate pinch or wheel zoom does not
+    // change the element's size, so it is left alone.
+    const grew = Math.abs(w - (this._fitW || 0)) > Math.max(24, (this._fitW || 0) * 0.1)
+      || Math.abs(h - (this._fitH || 0)) > Math.max(24, (this._fitH || 0) * 0.1);
+    if (grew) this.fit();
     this.invalidate();
   };
 
@@ -366,6 +369,8 @@
     this.cam.ox = (this.cssW - st.cols * s) / 2;
     this.cam.oy = (this.cssH - st.rows * s) / 2;
     this._fittedDots = st.dots;
+    this._fitW = this.cssW;
+    this._fitH = this.cssH;
     this.dirty = true;
   };
 
