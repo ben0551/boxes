@@ -266,6 +266,8 @@
     this.pinch = null;
     this._fittedDots = null;
     this._lastPointerDown = 0;
+    this._dots = null;
+    this._lastEdge = null;
     this._raf = false;
     this.cssW = 0;
     this.cssH = 0;
@@ -281,9 +283,18 @@
       return;
     }
     this._key = key;
+    const boardChanged = this._dots !== state.dots;
+    this._dots = state.dots;
     this.state = state;
     this.rebuildOwners();
-    this.anims = [];
+    // A new board clears leftover animation; an ordinary move keeps its box
+    // fills so they are not cut short by the re-render.
+    if (boardChanged) this.anims = [];
+    // A newly reported line (an opponent's move online) draws itself in.
+    if (state && state.lastEdge !== null && state.lastEdge !== undefined && state.lastEdge !== this._lastEdge) {
+      this._lastEdge = state.lastEdge;
+      this.anims.push({ kind: 'edge', id: state.lastEdge, dur: 110, t0: performance.now() });
+    }
     this.dirty = true;
   };
 
