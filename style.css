@@ -314,7 +314,7 @@ input[type="text"]:focus, select:focus { outline: 2px solid var(--p1); outline-o
   box-shadow: var(--shadow);
   touch-action: none;
 }
-#board { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+#board { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 
 .board-tools {
   position: absolute;
