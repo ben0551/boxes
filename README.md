@@ -135,6 +135,22 @@ All off by default, toggled in **Settings**:
 Settings also cover four themes (Graph paper, Whiteboard, Chalkboard, Retro
 computer) and the box mark (initials, star or blank).
 
+## Performance
+
+Measured by timing `BoardView.render()` in headless Chrome:
+
+| Board | State | ms per frame |
+|---|---|---|
+| 21×21 dots (400 boxes) | empty | 0.33 |
+| 21×21 dots (400 boxes) | completely filled | 5.7 |
+| 50×50 dots (2,401 boxes) | completely filled | 30.7 |
+
+The spec's targets — 60 FPS at 100, 196 and 400 boxes — are met with room to
+spare; a full custom 50×50 page runs at roughly 33 FPS.
+
+Search budgets are wall-clock capped as well, so a move never takes longer than
+the level allows (260 ms Competitive, 950 ms Grandmaster), whatever the board.
+
 ## Development
 
 Plain HTML/CSS/vanilla JS. No build step, no dependencies to install.
