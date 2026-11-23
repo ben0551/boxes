@@ -86,8 +86,8 @@ guessed.
 
 | Matchup (seats alternated) | Stronger level wins |
 |---|---|
-| Casual vs School Kid | 100% |
-| Competitive vs Casual | 90% |
+| Casual vs School Kid | 100% (8 games) |
+| Competitive vs Casual | 96.7% (30 games, average margin 16.1 boxes) |
 | Grandmaster vs Competitive | see below |
 
 Run it yourself:
